@@ -6,8 +6,19 @@ st.title("✅ Verificador de temperatura del pollo")
 
 uploaded_file = st.file_uploader("📤 Sube tu archivo CSV con la temperatura", type=["csv"])
 
-temperatura_objetivo = st.number_input("🌡️ Temperatura mínima (°C)", min_value=0.0, value=83.0)
-tiempo_objetivo_minutos = st.number_input("⏱️ Tiempo mínimo por encima de esa temperatura (minutos)", min_value=0.0, value=129.0)
+temperatura_objetivo = st.number_input(
+    "🌡️ Temperatura mínima (°C)", 
+    min_value=0, 
+    value=83, 
+    step=1
+)
+
+tiempo_objetivo_minutos = st.number_input(
+    "⏱️ Tiempo mínimo por encima de esa temperatura (minutos)", 
+    min_value=0, 
+    value=129, 
+    step=1
+)
 
 def formato_tiempo(segundos):
     minutos_totales = int(round(segundos / 60))
