@@ -92,13 +92,15 @@ if uploaded_file is not None:
             y='temperatura real del nucleo:Q',
             color=alt.condition(
                 alt.datum['temperatura real del nucleo'] >= temperatura_objetivo,
-                alt.value('red'),
-                alt.value('blue')
+                alt.value('green'),  # Verde por encima del umbral
+                alt.value('red')     # Rojo por debajo del umbral
             ),
             tooltip=['marca de tiempo:T', 'temperatura real del nucleo:Q']
         )
 
-        threshold_line = alt.Chart(pd.DataFrame({'threshold': [temperatura_objetivo]})).mark_rule(color='black', strokeDash=[4,4]).encode(
+        threshold_line = alt.Chart(
+            pd.DataFrame({'threshold': [temperatura_objetivo]})
+        ).mark_rule(color='black', strokeDash=[4,4]).encode(
             y='threshold:Q'
         )
 
