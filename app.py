@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.title("✅ Verificador de temperatura del pollo y abatidor")
+st.title("✅ Verificador de temperatura del pollo y abatidor ")
 
 st.header("🍗 Verificación del horno")
 
