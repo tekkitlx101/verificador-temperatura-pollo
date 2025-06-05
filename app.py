@@ -10,12 +10,13 @@ temperatura_objetivo = st.number_input("🌡️ Temperatura mínima (°C)", min_
 tiempo_objetivo_minutos = st.number_input("⏱️ Tiempo mínimo por encima de esa temperatura (minutos)", min_value=0.0, value=129.0)
 
 def formato_tiempo(segundos):
-    minutos = segundos / 60
-    if minutos < 60:
-        return f"{minutos:.2f} minutos"
+    minutos_totales = int(round(segundos / 60))
+    if minutos_totales < 60:
+        return f"{minutos_totales} minutos"
     else:
-        horas = minutos / 60
-        return f"{horas:.2f} horas"
+        horas = minutos_totales // 60
+        minutos = minutos_totales % 60
+        return f"{horas} horas {minutos} minutos"
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding='utf-8', engine='python')
