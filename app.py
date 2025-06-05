@@ -81,22 +81,23 @@ if uploaded_file is not None:
         st.subheader("📅 Intervalos continuos donde la temperatura estuvo por encima del objetivo")
         st.dataframe(intervalos[['inicio', 'fin', 'duracion']])
 
-        # Gráfica: una roja general y una verde encima donde está por encima del umbral
+        # Preparamos columna para la línea verde discontinua
+        df['temp_visible'] = df.apply(
+            lambda row: row['temperatura real del nucleo'] if row['temperatura real del nucleo'] >= temperatura_objetivo else None,
+            axis=1
+        )
+
+        # Gráfica
         base = alt.Chart(df).encode(x='marca de tiempo:T')
 
-        # Línea roja general
         linea_roja = base.mark_line(color='red').encode(
             y='temperatura real del nucleo:Q'
         )
 
-        # Línea verde solo en puntos por encima del umbral
-        linea_verde = base.transform_filter(
-            alt.datum['temperatura real del nucleo'] >= temperatura_objetivo
-        ).mark_line(color='green').encode(
-            y='temperatura real del nucleo:Q'
+        linea_verde = base.mark_line(color='green').encode(
+            y='temp_visible:Q'
         )
 
-        # Línea de umbral
         threshold_line = alt.Chart(
             pd.DataFrame({'threshold': [temperatura_objetivo]})
         ).mark_rule(color='black', strokeDash=[4, 4]).encode(
