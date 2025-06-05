@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 st.title("✅ Verificador de temperatura del pollo")
 
@@ -40,14 +41,12 @@ if uploaded_file is not None:
 
         grupos_en_rango = df[df['en_rango']].groupby('grupo')
 
-        # Crear un dataframe con info de cada intervalo continuo arriba del umbral
         intervalos = grupos_en_rango.agg(
             inicio=('marca de tiempo', 'first'),
             fin=('marca de tiempo', 'last'),
             duracion_segundos=('tiempo_delta', 'sum')
         ).reset_index(drop=True)
 
-        # Mostrar la tabla de intervalos con duración formateada
         intervalos['duracion'] = intervalos['duracion_segundos'].apply(formato_tiempo)
 
         tiempo_total_en_rango = intervalos['duracion_segundos'].sum()
@@ -56,7 +55,6 @@ if uploaded_file is not None:
         st.write(f"Tiempo total acumulado por encima de {temperatura_objetivo}°C: **{formato_tiempo(tiempo_total_en_rango)}**")
         st.write(f"Máximo tiempo continuo por encima de {temperatura_objetivo}°C: **{formato_tiempo(max_tiempo_continuo)}**")
 
-        # Convertir tiempo objetivo a segundos para la comparación
         tiempo_objetivo_segundos = tiempo_objetivo_minutos * 60
 
         if max_tiempo_continuo >= tiempo_objetivo_segundos:
@@ -64,6 +62,36 @@ if uploaded_file is not None:
         else:
             st.error("❌ El pollo NO cumplió con el tiempo mínimo requerido de forma continua.")
 
-        # Mostrar tabla con intervalos para verificación
         st.subheader("📅 Intervalos continuos donde la temperatura estuvo por encima del objetivo")
         st.dataframe(intervalos[['inicio', 'fin', 'duracion']])
+
+        # Gráfica con Altair
+        df['estado'] = df['temperatura real del nucleo'] >= temperatura_objetivo
+
+        base = alt.Chart(df).encode(
+            x='marca de tiempo:T'
+        )
+
+        line_temp = base.mark_line().encode(
+            y='temperatura real del nucleo:Q',
+            color=alt.condition(
+                alt.datum['temperatura real del nucleo'] >= temperatura_objetivo,
+                alt.value('red'),
+                alt.value('blue')
+            ),
+            tooltip=['marca de tiempo:T', 'temperatura real del nucleo:Q']
+        )
+
+        # Línea horizontal del threshold
+        threshold_line = alt.Chart(pd.DataFrame({'threshold': [temperatura_objetivo]})).mark_rule(color='black', strokeDash=[4,4]).encode(
+            y='threshold:Q'
+        )
+
+        grafica = (line_temp + threshold_line).properties(
+            width=700,
+            height=400,
+            title='Temperatura del núcleo del pollo a lo largo del tiempo'
+        ).interactive()
+
+        st.altair_chart(grafica, use_container_width=True)
+
