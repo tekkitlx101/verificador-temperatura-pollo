@@ -5,8 +5,8 @@ st.title("✅ Verificador de temperatura del pollo")
 
 uploaded_file = st.file_uploader("📤 Sube tu archivo CSV con la temperatura", type=["csv"])
 
-temperatura_objetivo = st.number_input("🌡️ Temperatura mínima (°C)", min_value=0.0, value=72.0)
-tiempo_objetivo = st.number_input("⏱️ Tiempo mínimo por encima de esa temperatura (segundos)", min_value=0.0, value=90.0)
+temperatura_objetivo = st.number_input("🌡️ Temperatura mínima (°C)", min_value=0.0, value=83.0)
+tiempo_objetivo_minutos = st.number_input("⏱️ Tiempo mínimo por encima de esa temperatura (minutos)", min_value=0.0, value=129.0)
 
 def formato_tiempo(segundos):
     minutos = segundos / 60
@@ -47,7 +47,10 @@ if uploaded_file is not None:
         st.write(f"Tiempo total acumulado por encima de {temperatura_objetivo}°C: **{formato_tiempo(tiempo_total_en_rango)}**")
         st.write(f"Máximo tiempo continuo por encima de {temperatura_objetivo}°C: **{formato_tiempo(max_tiempo_continuo)}**")
 
-        if max_tiempo_continuo >= tiempo_objetivo:
+        # Convertir tiempo objetivo a segundos para la comparación
+        tiempo_objetivo_segundos = tiempo_objetivo_minutos * 60
+
+        if max_tiempo_continuo >= tiempo_objetivo_segundos:
             st.success("✅ El pollo cumplió con el tiempo mínimo requerido de forma continua.")
         else:
             st.error("❌ El pollo NO cumplió con el tiempo mínimo requerido de forma continua.")
