@@ -81,30 +81,29 @@ if uploaded_file is not None:
         st.subheader("📅 Intervalos continuos donde la temperatura estuvo por encima del objetivo")
         st.dataframe(intervalos[['inicio', 'fin', 'duracion']])
 
-        # Gráfica con Altair
-        df['estado'] = df['temperatura real del nucleo'] >= temperatura_objetivo
+        # Gráfica: una roja general y una verde encima donde está por encima del umbral
+        base = alt.Chart(df).encode(x='marca de tiempo:T')
 
-        base = alt.Chart(df).encode(
-            x='marca de tiempo:T'
+        # Línea roja general
+        linea_roja = base.mark_line(color='red').encode(
+            y='temperatura real del nucleo:Q'
         )
 
-        line_temp = base.mark_line().encode(
-            y='temperatura real del nucleo:Q',
-            color=alt.condition(
-                alt.datum['temperatura real del nucleo'] >= temperatura_objetivo,
-                alt.value('green'),  # Verde por encima del umbral
-                alt.value('red')     # Rojo por debajo del umbral
-            ),
-            tooltip=['marca de tiempo:T', 'temperatura real del nucleo:Q']
+        # Línea verde solo en puntos por encima del umbral
+        linea_verde = base.transform_filter(
+            alt.datum['temperatura real del nucleo'] >= temperatura_objetivo
+        ).mark_line(color='green').encode(
+            y='temperatura real del nucleo:Q'
         )
 
+        # Línea de umbral
         threshold_line = alt.Chart(
             pd.DataFrame({'threshold': [temperatura_objetivo]})
-        ).mark_rule(color='black', strokeDash=[4,4]).encode(
+        ).mark_rule(color='black', strokeDash=[4, 4]).encode(
             y='threshold:Q'
         )
 
-        grafica = (line_temp + threshold_line).properties(
+        grafica = (linea_roja + linea_verde + threshold_line).properties(
             width=700,
             height=400,
             title='Temperatura del núcleo del pollo a lo largo del tiempo'
