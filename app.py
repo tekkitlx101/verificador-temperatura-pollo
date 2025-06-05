@@ -47,6 +47,10 @@ if uploaded_file is not None:
             duracion_segundos=('tiempo_delta', 'sum')
         ).reset_index(drop=True)
 
+        # Mostrar solo la hora en inicio y fin
+        intervalos['inicio'] = intervalos['inicio'].dt.time
+        intervalos['fin'] = intervalos['fin'].dt.time
+
         intervalos['duracion'] = intervalos['duracion_segundos'].apply(formato_tiempo)
 
         tiempo_total_en_rango = intervalos['duracion_segundos'].sum()
@@ -82,7 +86,6 @@ if uploaded_file is not None:
             tooltip=['marca de tiempo:T', 'temperatura real del nucleo:Q']
         )
 
-        # Línea horizontal del threshold
         threshold_line = alt.Chart(pd.DataFrame({'threshold': [temperatura_objetivo]})).mark_rule(color='black', strokeDash=[4,4]).encode(
             y='threshold:Q'
         )
@@ -94,4 +97,3 @@ if uploaded_file is not None:
         ).interactive()
 
         st.altair_chart(grafica, use_container_width=True)
-
