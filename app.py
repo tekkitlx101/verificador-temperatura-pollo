@@ -39,10 +39,19 @@ if uploaded_file is not None:
         df['grupo'] = (df['en_rango'] != df['en_rango'].shift()).cumsum()
 
         grupos_en_rango = df[df['en_rango']].groupby('grupo')
-        duraciones = grupos_en_rango['tiempo_delta'].sum()
 
-        tiempo_total_en_rango = duraciones.sum()
-        max_tiempo_continuo = duraciones.max() if not duraciones.empty else 0
+        # Crear un dataframe con info de cada intervalo continuo arriba del umbral
+        intervalos = grupos_en_rango.agg(
+            inicio=('marca de tiempo', 'first'),
+            fin=('marca de tiempo', 'last'),
+            duracion_segundos=('tiempo_delta', 'sum')
+        ).reset_index(drop=True)
+
+        # Mostrar la tabla de intervalos con duración formateada
+        intervalos['duracion'] = intervalos['duracion_segundos'].apply(formato_tiempo)
+
+        tiempo_total_en_rango = intervalos['duracion_segundos'].sum()
+        max_tiempo_continuo = intervalos['duracion_segundos'].max() if not intervalos.empty else 0
 
         st.write(f"Tiempo total acumulado por encima de {temperatura_objetivo}°C: **{formato_tiempo(tiempo_total_en_rango)}**")
         st.write(f"Máximo tiempo continuo por encima de {temperatura_objetivo}°C: **{formato_tiempo(max_tiempo_continuo)}**")
@@ -54,3 +63,7 @@ if uploaded_file is not None:
             st.success("✅ El pollo cumplió con el tiempo mínimo requerido de forma continua.")
         else:
             st.error("❌ El pollo NO cumplió con el tiempo mínimo requerido de forma continua.")
+
+        # Mostrar tabla con intervalos para verificación
+        st.subheader("📅 Intervalos continuos donde la temperatura estuvo por encima del objetivo")
+        st.dataframe(intervalos[['inicio', 'fin', 'duracion']])
